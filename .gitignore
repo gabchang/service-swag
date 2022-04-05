@@ -1,0 +1,15 @@
+# Builds
+dist
+
+# IDE files
+.idea
+
+# Logs
+logs
+*.log
+
+# Dependencies
+node_modules
+
+# Cache
+.cache

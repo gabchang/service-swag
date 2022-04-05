@@ -1,0 +1,7 @@
+{
+  "transformers": {
+    "*.yaml": [
+      "@parcel/transformer-yaml"
+    ]
+  }
+}
