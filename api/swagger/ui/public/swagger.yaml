@@ -1,0 +1,627 @@
+swagger: '2.0'
+info:
+  version: 2.0.0
+  title: Clients service
+host: clients-v2.endpoints.shine-api-staging.cloud.goog
+tags:
+  - name: Clients
+x-google-endpoints:
+  - name: clients-v2.endpoints.shine-api-staging.cloud.goog
+    allowCors: true
+securityDefinitions:
+  google_id_token:
+    authorizationUrl: ''
+    flow: implicit
+    type: oauth2
+    x-google-issuer: 'https://accounts.google.com'
+  api_key:
+    type: apiKey
+    name: key
+    in: query
+security:
+  - google_id_token: []
+basePath: /v2
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /clients/liveness_check:
+    x-swagger-router-controller: internal
+    get:
+      tags:
+        - Health check
+      description: Health checking liveness endpoint
+      operationId: liveness
+      security: []
+      responses:
+        '200':
+          description: all is well
+  /clients/readiness_check:
+    x-swagger-router-controller: internal
+    get:
+      tags:
+        - Health check
+      description: Health checking readiness endpoint
+      operationId: readiness
+      security: []
+      responses:
+        '200':
+          description: all is well
+  /clients/swagger.json:
+    x-swagger-router-controller: internal
+    get:
+      tags:
+        - Docs
+      description: Get swagger file
+      operationId: docs
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: swagger file in json format
+  /clients:
+    x-swagger-router-controller: clients
+    post:
+      tags:
+        - Clients
+      description: Insert a new client
+      operationId: insert
+      x-shine-authorization:
+        scope: invoices:write
+      parameters:
+        - name: body
+          in: body
+          description: Client data
+          required: true
+          schema:
+            required:
+              - city
+              - companyProfileId
+              - country
+              - street
+              - uid
+              - zip
+            additionalProperties: false
+            properties:
+              city:
+                type: string
+              contacts:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - firstName
+                    - lastName
+                    - email
+                  properties:
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    email:
+                      type: string
+                    phone:
+                      type: string
+              companyName:
+                type: string
+              companyProfileId:
+                type: string
+              country:
+                format: countryCode
+                type: string
+              email:
+                type: string
+                format: email
+              firstName:
+                type: string
+              lastName:
+                type: string
+              legalRegistrationNumber:
+                type: string
+              name:
+                type: string
+                description: Deprecated, use companyName or firstName + lastName instead
+              phone:
+                type: string
+              street:
+                type: string
+              streetAddition:
+                type: string
+              type:
+                type: string
+                enum:
+                  - PRIVATE_INDIVIDUAL
+                  - ORGANIZATION
+              uid:
+                type: string
+              vatId:
+                type: string
+              zip:
+                type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /clients/query:
+    x-swagger-router-controller: clients
+    get:
+      tags:
+        - Clients
+      description: Query and retrieve a list of clients
+      operationId: query
+      x-shine-authorization:
+        scope: invoices:read
+      parameters:
+        - name: uid
+          in: query
+          description: Retrieve clients for a specific user id
+          type: string
+        - name: companyProfileId
+          in: query
+          description: Retrieve clients for a specific companyProfileId
+          type: string
+        - name: first
+          in: query
+          description: Number of clients to retrieve
+          type: string
+        - name: after
+          in: query
+          description: Retrieve clients after a specific cursor
+          type: integer
+        - name: deleted
+          in: query
+          description: if true, return all rows, if false or unset, will only return non-deleted rows
+          type: boolean
+        - name: q
+          in: query
+          description: "Optional param, to match the field 'name'"
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  '/clients/{clientId}':
+    x-swagger-router-controller: clients
+    get:
+      tags:
+        - Clients
+      description: Get a client by id
+      operationId: get
+      x-shine-authorization:
+        scope: invoices:read
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Client id to retrieve
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - Clients
+      description: Update a client
+      operationId: update
+      x-shine-authorization:
+        scope: invoices:write
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Client id to update
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Client data
+          required: true
+          schema:
+            additionalProperties: false
+            properties:
+              city:
+                type: string
+              country:
+                format: countryCode
+                type: string
+              companyName:
+                type: string
+              deleted:
+                type: boolean
+              email:
+                format: email
+                type: string
+              firstName:
+                type: string
+              lastName:
+                type: string
+              legalRegistrationNumber:
+                type: string
+              name:
+                type: string
+              phone:
+                type: string
+              street:
+                type: string
+              vatId:
+                type: string
+              zip:
+                type: string
+              type:
+                type: string
+                enum:
+                  - PRIVATE_INDIVIDUAL
+                  - ORGANIZATION
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - Clients
+      description: Delete a client by id
+      operationId: del
+      x-shine-authorization:
+        scope: invoices:write
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Id of the client to delete
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/Client'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+
+  /clients/{clientId}/contacts:
+    x-swagger-router-controller: clientContacts
+    get:
+      tags:
+        - Clients
+      description: Query and retrieve a list of client contacts
+      operationId: queryContacts
+      x-shine-authorization:
+        scope: invoices:read
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          required: true
+          in: path
+          description: Retrieve contacts for a specific client id
+          type: string
+        - name: first
+          in: query
+          description: Number of client contacts to retrieve
+          type: string
+        - name: after
+          in: query
+          description: Retrieve client contacts after a specific cursor
+          type: integer
+        - name: withDeleted
+          in: query
+          description: if true, return all rows, if false or unset, will only return non-deleted rows
+          type: boolean
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ClientContact'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    post:
+      tags:
+        - ClientContacts
+      description: Insert a new client contact
+      operationId: insertContact
+      x-shine-authorization:
+        scope: invoices:write
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Client id to attach a contact to
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Client contact data
+          required: true
+          schema:
+            required:
+              - email
+              - firstName
+              - lastName
+            additionalProperties: false
+            properties:
+              email:
+                format: email
+                type: string
+              firstName:
+                type: string
+              lastName:
+                type: string
+              phone:
+                type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/ClientContact'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /clients/{clientId}/contacts/{clientContactId}:
+    x-swagger-router-controller: clientContacts
+    get:
+      tags:
+        - ClientContacts
+      description: Get a client contact by id
+      operationId: getContact
+      x-shine-authorization:
+        scope: invoices:read
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Id of the client which the contact is attached to
+          required: true
+          type: string
+        - name: clientContactId
+          in: path
+          description: Id of the contact
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/ClientContact'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    put:
+      tags:
+        - ClientContacts
+      description: Update a client contact
+      operationId: updateContact
+      x-shine-authorization:
+        scope: invoices:write
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Id of the client which the contact is attached to
+          required: true
+          type: string
+        - name: clientContactId
+          in: path
+          description: Id of the contact to update
+          required: true
+          type: string
+        - name: body
+          in: body
+          description: Client contact update data
+          required: true
+          schema:
+            additionalProperties: false
+            properties:
+              email:
+                format: email
+                type: string
+              firstName:
+                type: string
+              lastName:
+                type: string
+              phone:
+                type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/ClientContact'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+    delete:
+      tags:
+        - ClientContacts
+      description: Delete a client contact by id
+      operationId: deleteContact
+      x-shine-authorization:
+        scope: invoices:write
+        validators:
+          - name: validateClientId
+            in: path
+      parameters:
+        - name: clientId
+          in: path
+          description: Id of the client which the contact is attached to
+          required: true
+          type: string
+        - name: clientContactId
+          in: path
+          description: Id of the client contact to delete
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            required:
+              - data
+            properties:
+              data:
+                $ref: '#/definitions/ClientContact'
+        default:
+          description: Error
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+  /swagger:
+    x-swagger-pipe: swagger_raw
+definitions:
+  Client:
+    additionalProperties: false
+    properties:
+      city:
+        type: string
+      clientId:
+        type: string
+      companyName:
+        type: string
+      country:
+        type: string
+      companyProfileId:
+        type: string
+      deleted:
+        type: string
+      firstName:
+        type: string
+      lastName:
+        type: string
+      legalRegistrationNumber:
+        type: string
+        description: SIRET
+      name:
+        type: string
+        description: Deprecated, use companyName or firstName + lastName instead
+      nameLatinised:
+        type: string
+      street:
+        type: string
+      streetAddition:
+        type: string
+      type:
+        type: string
+        enum:
+          - PRIVATE_INDIVIDUAL
+          - ORGANIZATION
+      uid:
+        type: string
+      vatId:
+        type: string
+        description: VAT number
+      zip:
+        type: string
+  ClientContact:
+    additionalProperties: false
+    properties:
+      clientContactId:
+        type: string
+      clientId:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      isDeleted:
+        type: boolean
+      lastName:
+        type: string
+      phone:
+        type: string
+      updatedAt:
+        type: string
+  ErrorResponse:
+    required:
+      - message
+      - status
+    properties:
+      message:
+        type: string
+      status:
+        type: string
